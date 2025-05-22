@@ -25,7 +25,7 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
         <button
           onClick={onClose}
           className="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition"
-          aria-label="Close modal"
+          aria-label="ปิดหน้าต่าง"
         >
           <X size={20} />
         </button>
@@ -39,16 +39,16 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
             </div>
             <div className="mt-2 flex items-center gap-2">
               <RatingStars rating={recipe.rating} />
-              <span className="text-xs text-gray-500 ml-2">({recipe.ratingsCount} ratings)</span>
+              <span className="text-xs text-gray-500 ml-2">({recipe.ratingsCount} คะแนนรีวิว)</span>
             </div>
-            <p className="mt-1 text-xs text-gray-500">by {recipe.author}</p>
-            <h3 className="font-semibold mt-4 mb-1 flex gap-1 items-center text-emerald-700"><BookOpen size={18} /> Ingredients</h3>
+            <p className="mt-1 text-xs text-gray-500">โดย {recipe.author}</p>
+            <h3 className="font-semibold mt-4 mb-1 flex gap-1 items-center text-emerald-700"><BookOpen size={18} /> ส่วนผสม</h3>
             <ul className="list-disc list-inside text-gray-800 text-sm mb-4">
               {recipe.ingredients.map((ing, i) => (
                 <li key={i}>{ing}</li>
               ))}
             </ul>
-            <h3 className="font-semibold mb-1 text-emerald-700">Steps</h3>
+            <h3 className="font-semibold mb-1 text-emerald-700">วิธีทำ</h3>
             <ol className="list-decimal list-inside text-gray-800 text-sm space-y-1">
               {recipe.steps.map((step, i) => (
                 <li key={i}>{step}</li>

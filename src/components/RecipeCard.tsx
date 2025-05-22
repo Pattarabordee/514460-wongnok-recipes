@@ -19,10 +19,10 @@ interface RecipeCardProps {
 }
 
 const badgeColors: Record<string, string> = {
-  "Easy": "bg-green-100 text-green-700",
-  "Medium": "bg-yellow-100 text-yellow-800",
-  "Hard": "bg-orange-100 text-orange-800",
-  "Extreme Hard": "bg-red-100 text-red-800",
+  "ง่าย": "bg-green-100 text-green-700",
+  "ปานกลาง": "bg-yellow-100 text-yellow-800",
+  "ยาก": "bg-orange-100 text-orange-800",
+  "ยากมาก": "bg-red-100 text-red-800",
 };
 
 const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => (
@@ -30,7 +30,7 @@ const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => (
     className="group bg-white rounded-xl shadow hover:shadow-xl transition-shadow cursor-pointer flex flex-col animate-fade-in"
     onClick={onClick}
     tabIndex={0}
-    aria-label={`View Recipe: ${recipe.title}`}
+    aria-label={`ดูสูตรอาหาร: ${recipe.title}`}
     role="button"
   >
     <img
@@ -53,7 +53,7 @@ const RecipeCard = ({ recipe, onClick }: RecipeCardProps) => (
           <span className="font-medium">{recipe.rating.toFixed(1)}</span>
         </span>
         <span className="text-xs text-gray-500">({recipe.ratingsCount})</span>
-        <span className="ml-auto text-xs text-gray-400">by {recipe.author}</span>
+        <span className="ml-auto text-xs text-gray-400">โดย {recipe.author}</span>
       </div>
     </div>
   </div>
