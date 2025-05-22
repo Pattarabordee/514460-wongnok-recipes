@@ -1,14 +1,23 @@
-// Update this page (the content is just a fallback if you fail to update the page)
 
-const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+// Home page for Wongnok recipes
+
+import Layout from "@/components/Layout";
+import Hero from "@/components/Hero";
+import SearchSidebar from "@/components/SearchSidebar";
+import RecipeList from "@/components/RecipeList";
+
+const Index = () => (
+  <Layout>
+    <Hero />
+    <div className="flex flex-col md:flex-row gap-8">
+      <div className="md:w-1/3">
+        <SearchSidebar />
+      </div>
+      <div className="flex-1">
+        <RecipeList />
       </div>
     </div>
-  );
-};
+  </Layout>
+);
 
 export default Index;

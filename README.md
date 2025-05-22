@@ -1,73 +1,102 @@
-# Welcome to your Lovable project
 
-## Project info
+# Wongnok recipes
 
-**URL**: https://lovable.dev/projects/948510f2-5766-44e2-bb63-abe441678502
+A modern, responsive community recipe-sharing platform — discover, share, rate, and manage delicious recipes!
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- Browse, search, and filter recipes without logging in
+- Share original recipes with name, image, ingredients, steps, cooking time, and difficulty
+- Rate others' recipes once per recipe (members only)
+- Fully responsive & beautiful design (mobile, tablet, desktop)
+- Fast image loading & scalable layout for big recipe collections
+- Modular, modern React frontend, Shadcn UI, Tailwind CSS
+- Supabase-ready (easy backend plug-in for auth, DB, storage, RESTful API)
+- All source code well-structured for easy extensibility
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/948510f2-5766-44e2-bb63-abe441678502) and start prompting.
+## Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend:** React + Vite + Typescript + Tailwind + Shadcn UI
+- **Backend:** (Recommended: Supabase/Postgres, Node.js/Express or Python/FastAPI)
+- **API:** RESTful endpoints (see `/api` and Postman collection as reference)
+- **Image storage:** (Supabase Storage or S3 for real deployment)
+- **Authentication:** (Supabase Auth, with email & password flow)
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Setup & Running
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. **Install dependencies**
 
-Follow these steps:
+   ```
+   npm install
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. **Run the development server**
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+   ```
+   npm run dev
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. **(Recommended): Connect to Supabase for fullstack features:**
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+   - Click the green Supabase button in Lovable, connect your DB and storage.
+   - See [Supabase integration docs](https://docs.lovable.dev/integrations/supabase/).
+
+---
+
+## Folder Structure
+
+```
+src/
+  assets/           # Sample data, images
+  components/       # UI components
+  pages/            # Main pages and modals
+  hooks/            # Custom hooks
+  lib/              # Utility files
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Backend & API Endpoints
 
-**Use GitHub Codespaces**
+> **NOTE:** Backend and API functionality will be available when you connect to Supabase and set up your database.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+**Example Endpoints:**
 
-## What technologies are used for this project?
+| Method | Endpoint                   | Description                        |
+|--------|----------------------------|------------------------------------|
+| POST   | `/api/register`            | Register a new user                |
+| POST   | `/api/login`               | Log in a user                      |
+| GET    | `/api/recipes`             | Fetch recipes, supports filters    |
+| GET    | `/api/recipes/:id`         | Get recipe details                 |
+| POST   | `/api/recipes`             | Create a recipe                    |
+| PUT    | `/api/recipes/:id`         | Update (own) recipe                |
+| DELETE | `/api/recipes/:id`         | Delete (own) recipe                |
+| POST   | `/api/recipes/:id/rate`    | Rate another member's recipe       |
 
-This project is built with:
+(See `/postman/WongnokRecipes.postman_collection.json` for API samples)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## Postman API Collection
 
-Simply open [Lovable](https://lovable.dev/projects/948510f2-5766-44e2-bb63-abe441678502) and click on Share -> Publish.
+A `WongnokRecipes.postman_collection.json` sample will be provided as soon as you connect your backend.
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## Next steps
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- Add Supabase: authentication, database, REST API
+- Implement members-only flows (add recipe, edit, rating)
+- Optimize image delivery with Supabase or cloud storage
+- Make the recipes real, dynamic, and community-driven!
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
+
+## Credits
+
+Made with ❤️ using Lovable, Tailwind and Shadcn UI.
+
