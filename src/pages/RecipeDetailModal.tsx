@@ -1,4 +1,3 @@
-
 import { X, BookOpen } from "lucide-react";
 import RatingStars from "@/components/RatingStars";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -29,7 +28,7 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
     myRating,
     loadingMyRating,
     rate,
-    rateIsLoading,
+    rateIsPending,  // UPDATED PROPERTY
     aggregate,
   } = useRecipeRating({ recipeId: recipe.id });
   const [hoverStar, setHoverStar] = useState<number | null>(null);
@@ -37,7 +36,7 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
   const canRate =
     !!user &&
     (user.id !== recipe.authorId) &&
-    !rateIsLoading;
+    !rateIsPending; // UPDATED PROPERTY NAME
 
   // For consistent UI, decide which values to display
   const avgToDisplay = aggregate ? aggregate.avg : recipe.rating;
@@ -115,7 +114,7 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
                               key={i}
                               type="button"
                               className={`p-0 m-0 bg-transparent border-none ${hoverStar !== null && hoverStar >= i + 1 ? "scale-110" : ""}`}
-                              disabled={rateIsLoading || user.id === recipe.authorId}
+                              disabled={rateIsPending || user.id === recipe.authorId}
                               onMouseEnter={() => setHoverStar(i + 1)}
                               onMouseLeave={() => setHoverStar(null)}
                               onClick={() => handleRate(i + 1)}

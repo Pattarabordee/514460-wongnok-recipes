@@ -94,7 +94,7 @@ export function useRecipeRating({ recipeId }: UseRecipeRatingOptions) {
     myRating,
     loadingMyRating,
     rate: rateMutation.mutate,
-    rateIsLoading: rateMutation.isLoading,
+    rateIsPending: rateMutation.isPending,
     aggregate,
     refetchAggregate,
   };
