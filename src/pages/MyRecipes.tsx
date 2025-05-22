@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,14 +26,14 @@ const TABS = [
   { value: "rating", label: "ยอดนิยม" }
 ] as const;
 
-// Step 2: Define TabValue type (no longer used explicitly)
+// Step 2: Define TabValue type 
 type TabValue = typeof TABS[number]["value"];
 
 export default function MyRecipes() {
   const { user, loading } = useAuthUser();
-  // Use string for tab value to match Tabs expectations
+  // แก้ไข useState ให้ชัดเจนเป็น TabValue
   const [openForm, setOpenForm] = useState<null | { mode: "new" } | { mode: "edit", recipe: MyRecipe }>(null);
-  const [viewTab, setViewTab] = useState<string>("my");
+  const [viewTab, setViewTab] = useState<TabValue>("my");
   const queryClient = useQueryClient();
 
   // ดึงสูตรอาหารของ user นี้
@@ -134,7 +135,8 @@ export default function MyRecipes() {
       {/* Tabs มุมมอง */}
       <Tabs
         value={viewTab}
-        onValueChange={setViewTab}
+        // setViewTab รับค่าที่เป็น TabValue เท่านั้น!
+        onValueChange={(val: TabValue) => setViewTab(val)}
         className="mb-6"
       >
         <TabsList>
