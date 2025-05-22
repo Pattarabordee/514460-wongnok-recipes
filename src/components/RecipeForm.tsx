@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -13,6 +12,8 @@ type RecipeFormValues = {
   image_url?: string | null;
   prep_time: number;
   difficulty: string;
+  ingredients?: any;
+  instructions?: any;
 };
 
 interface RecipeFormProps {
@@ -24,6 +25,8 @@ interface RecipeFormProps {
     image_url: string | null;
     prep_time: number;
     difficulty: string;
+    ingredients?: any;
+    instructions?: any;
   };
   onCancel: () => void;
   onSuccess: () => void;
@@ -60,24 +63,36 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     }
   }, [recipe, reset]);
 
+  // 1. CREATE
   const createMutation = useMutation({
     mutationFn: async (data: RecipeFormValues) => {
       if (!user) throw new Error("ต้องเข้าสู่ระบบก่อน");
-      const { error } = await supabase.from("recipes").insert({
+      // Add ingredients and instructions default values if missing
+      const payload = {
         ...data,
-        user_id: user.id
-      });
+        user_id: user.id,
+        ingredients: [],
+        instructions: [],
+      };
+      const { error } = await supabase.from("recipes").insert(payload);
       if (error) throw error;
     },
     onSuccess: onSuccess
   });
 
+  // 2. UPDATE
   const updateMutation = useMutation({
     mutationFn: async (data: RecipeFormValues) => {
       if (!user || !recipe) throw new Error("Invalid");
+      // Make sure to keep ingredients/instructions (fallback to empty if undefined)
+      const payload = {
+        ...data,
+        ingredients: recipe.ingredients ?? [],
+        instructions: recipe.instructions ?? [],
+      };
       const { error } = await supabase
         .from("recipes")
-        .update({ ...data })
+        .update(payload)
         .eq("id", recipe.id)
         .eq("user_id", user.id);
       if (error) throw error;
@@ -140,8 +155,8 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
             </FormField>
           </div>
           <div className="flex gap-2 justify-end mt-2">
-            <Button variant="ghost" type="button" onClick={onCancel}>ยกเลิก</Button>
-            <Button type="submit" loading={isSubmitting}>
+            <Button variant="ghost" type="button" onClick={onCancel} disabled={isSubmitting}>ยกเลิก</Button>
+            <Button type="submit" disabled={isSubmitting}>
               {mode === "new" ? "บันทึกสูตร" : "บันทึกการแก้ไข"}
             </Button>
           </div>
