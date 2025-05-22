@@ -19,17 +19,21 @@ export interface MyRecipe {
   description: string;
 }
 
-// กำหนด Name ของแท็บต่างๆ
+// กำหนด Name ของแท็บต่างๆ (Step 1: Add "as const" for literal types)
 const TABS = [
   { value: "my", label: "ของฉัน" },
   { value: "member", label: "โดยสมาชิกอื่น" },
   { value: "rating", label: "ยอดนิยม" },
-];
+] as const;
+
+// Step 2: Define TabValue type
+type TabValue = typeof TABS[number]["value"];
 
 export default function MyRecipes() {
   const { user, loading } = useAuthUser();
+  // Step 3: use TabValue in useState
   const [openForm, setOpenForm] = useState<null | { mode: "new" } | { mode: "edit", recipe: MyRecipe }>(null);
-  const [viewTab, setViewTab] = useState<string>("my");
+  const [viewTab, setViewTab] = useState<TabValue>("my");
   const queryClient = useQueryClient();
 
   // ดึงสูตรอาหารของ user นี้
@@ -132,9 +136,9 @@ export default function MyRecipes() {
       </div>
       {/* Tabs มุมมอง */}
       <Tabs
-        // TypeScript fix: force type to string for value/onValueChange
-        value={viewTab as string}
-        onValueChange={(v) => setViewTab(v as string)}
+        // No type assertion needed anymore; TypeScript knows it's TabValue.
+        value={viewTab}
+        onValueChange={(v) => setViewTab(v as TabValue)}
         className="mb-6"
       >
         <TabsList>
