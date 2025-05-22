@@ -1,12 +1,12 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trash2, Edit } from "lucide-react";
+import { Loader2, Plus, Trash2, Edit, Home } from "lucide-react";
 import RecipeForm from "@/components/RecipeForm";
 import { Card } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 export interface MyRecipe {
   id: string;
@@ -57,6 +57,12 @@ export default function MyRecipes() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
+        <Link to="/" className="mr-2">
+          <Button variant="outline">
+            <Home className="w-4 h-4 mr-2" />
+            กลับหน้าหลัก
+          </Button>
+        </Link>
         <h1 className="text-2xl font-bold text-emerald-700">สูตรอาหารของฉัน</h1>
         <Button onClick={() => setOpenForm({ mode: "new" })}>
           <Plus className="w-4 h-4 mr-2" /> เพิ่มสูตรอาหารใหม่
