@@ -30,6 +30,14 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <span className="text-lg sm:text-2xl font-bold text-emerald-700 tracking-wide">
             <a href="/" className="hover:text-emerald-900 transition-colors">Wongnok recipes</a>
           </span>
+          {/* ลิงก์ My recipes */}
+          {user && (
+            <Link to="/my-recipes">
+              <Button variant="outline" className="ml-3">
+                สูตรอาหารของฉัน
+              </Button>
+            </Link>
+          )}
         </div>
         <nav className="flex items-center">
           {loading ? null : !user ? (
