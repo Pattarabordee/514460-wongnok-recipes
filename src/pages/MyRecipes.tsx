@@ -134,7 +134,7 @@ export default function MyRecipes() {
       {/* Tabs มุมมอง */}
       <Tabs
         value={viewTab}
-        onValueChange={(val) => setViewTab(val)}
+        onValueChange={(val: string) => setViewTab(val)}
         className="mb-6"
       >
         <TabsList>
