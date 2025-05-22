@@ -8,7 +8,6 @@ import { Loader2, Plus, Trash2, Edit, Home } from "lucide-react";
 import RecipeForm from "@/components/RecipeForm";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-// เพิ่มแท็บ UI
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export interface MyRecipe {
@@ -20,21 +19,21 @@ export interface MyRecipe {
   description: string;
 }
 
-// กำหนด Name ของแท็บต่างๆ (Step 1: Add "as const" for literal types)
+// กำหนด Name ของแท็บต่างๆ
 const TABS = [
   { value: "my", label: "ของฉัน" },
   { value: "member", label: "โดยสมาชิกอื่น" },
   { value: "rating", label: "ยอดนิยม" },
 ] as const;
 
-// Step 2: Define TabValue type
+// Step 2: Define TabValue type (no longer used explicitly)
 type TabValue = typeof TABS[number]["value"];
 
 export default function MyRecipes() {
   const { user, loading } = useAuthUser();
-  // Step 3: use TabValue in useState
+  // Use string for tab value to match Tabs expectations
   const [openForm, setOpenForm] = useState<null | { mode: "new" } | { mode: "edit", recipe: MyRecipe }>(null);
-  const [viewTab, setViewTab] = useState<TabValue>("my");
+  const [viewTab, setViewTab] = useState<string>("my");
   const queryClient = useQueryClient();
 
   // ดึงสูตรอาหารของ user นี้
@@ -71,10 +70,8 @@ export default function MyRecipes() {
   const { data: topRecipes, isLoading: loadingRating } = useQuery({
     queryKey: ["top-recipes"],
     queryFn: async () => {
-      // Join กับ ratings แล้วเอาค่าเฉลี่ย rating
       const { data, error } = await supabase
-        .rpc("recipes_with_avg_rating"); // ควรมี view หรือ function, แต่หากไม่มีจะดึงสูตรทั้งหมด (อัปเดตได้ภายหลัง)
-      // ถ้าไม่มีฟังก์ชัน rpc ให้ fallback เป็นแค่การเรียกสูตรทั้งหมด
+        .rpc("recipes_with_avg_rating");
       if (error || !data) {
         const { data: fallback, error: fallbackError } = await supabase
           .from("recipes")
@@ -117,7 +114,7 @@ export default function MyRecipes() {
     recipes = memberRecipes;
     isLoading = loadingMember;
   } else if (viewTab === "rating") {
-    recipes = topRecipes; // ในอนาคตอาจมี avg rating
+    recipes = topRecipes;
     isLoading = loadingRating;
   }
 
@@ -136,7 +133,7 @@ export default function MyRecipes() {
         </Button>
       </div>
       {/* Tabs มุมมอง */}
-      <Tabs<TabValue>
+      <Tabs
         value={viewTab}
         onValueChange={setViewTab}
         className="mb-6"
@@ -161,7 +158,6 @@ export default function MyRecipes() {
                 <h2 className="text-lg font-semibold mb-1">{r.title}</h2>
                 <div className="text-xs text-gray-500 mb-2">{r.difficulty} • {r.prep_time} นาที</div>
                 <div className="text-gray-700 text-sm line-clamp-2 mb-3">{r.description}</div>
-                {/* ปุ่ม edit/lลบ เฉพาะของตัวเอง */}
                 {viewTab === "my" && (
                   <div className="flex gap-2 mt-auto">
                     <Button size="sm" variant="outline" onClick={() => setOpenForm({ mode: "edit", recipe: r })}>
@@ -178,7 +174,6 @@ export default function MyRecipes() {
         ) : (
           <div className="text-center text-gray-500 my-16">ยังไม่มีสูตรอาหารของ{viewTab === "my" ? "คุณ" : viewTab === "member" ? "สมาชิกอื่น" : "หมวดนี้"}</div>
         )}
-      {/* ฟอร์ม create/edit */}
       {openForm && (
         <RecipeForm
           mode={openForm.mode}
