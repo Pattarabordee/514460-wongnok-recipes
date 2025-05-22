@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -132,7 +131,12 @@ export default function MyRecipes() {
         </Button>
       </div>
       {/* Tabs มุมมอง */}
-      <Tabs value={viewTab} onValueChange={setViewTab} className="mb-6">
+      <Tabs
+        // TypeScript fix: force type to string for value/onValueChange
+        value={viewTab as string}
+        onValueChange={(v) => setViewTab(v as string)}
+        className="mb-6"
+      >
         <TabsList>
           {TABS.map(tab => (
             <TabsTrigger key={tab.value} value={tab.value}>
