@@ -1,8 +1,10 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import AuthSignInForm from "./AuthSignInForm";
 import AuthSignUpForm from "./AuthSignUpForm";
@@ -28,6 +30,14 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-emerald-50">
+      <div className="absolute top-6 left-6">
+        <Link to="/">
+          <Button variant="ghost" className="flex items-center gap-2 px-3 shadow-sm border">
+            <Home className="w-5 h-5" />
+            <span className="hidden sm:inline">กลับหน้าหลัก</span>
+          </Button>
+        </Link>
+      </div>
       <Card className="w-full max-w-md space-y-4">
         <CardHeader className="text-center">
           <h1 className="text-2xl font-bold mb-2 text-emerald-700">

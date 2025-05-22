@@ -2,9 +2,9 @@
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuthUser } from "@/hooks/useAuthUser";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const Layout = ({ children }: { children: ReactNode }) => {
@@ -19,9 +19,18 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <header className="bg-white shadow py-4 px-6 flex items-center justify-between z-30 relative">
-        <span className="text-lg sm:text-2xl font-bold text-emerald-700 tracking-wide">
-          <a href="/" className="hover:text-emerald-900 transition-colors">Wongnok recipes</a>
-        </span>
+        <div className="flex items-center gap-4">
+          {/* ปุ่มกลับหน้าหลัก */}
+          <Link to="/">
+            <Button variant="ghost" className="flex items-center gap-2 px-2">
+              <Home className="w-5 h-5" />
+              <span className="hidden sm:inline">หน้าหลัก</span>
+            </Button>
+          </Link>
+          <span className="text-lg sm:text-2xl font-bold text-emerald-700 tracking-wide">
+            <a href="/" className="hover:text-emerald-900 transition-colors">Wongnok recipes</a>
+          </span>
+        </div>
         <nav className="flex items-center">
           {loading ? null : !user ? (
             <Button variant="secondary" onClick={() => navigate("/auth")} className="flex items-center gap-2">
