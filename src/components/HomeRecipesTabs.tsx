@@ -90,7 +90,7 @@ export default function HomeRecipesTabs() {
     <div>
       <Tabs
         value={tab}
-        onValueChange={setTab as (val: string) => void}
+        onValueChange={(val) => setTab(val)}
         className="mb-6"
       >
         <TabsList>

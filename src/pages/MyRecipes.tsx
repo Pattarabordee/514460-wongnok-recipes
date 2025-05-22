@@ -22,7 +22,7 @@ export interface MyRecipe {
 const TABS = [
   { value: "my", label: "ของฉัน" },
   { value: "member", label: "โดยสมาชิกอื่น" },
-  { value: "rating", label: "ยอดนิยม" },
+  { value: "rating", label: "ยอดนิยม" }
 ] as const;
 
 // Step 2: Define TabValue type (no longer used explicitly)
@@ -134,7 +134,7 @@ export default function MyRecipes() {
       {/* Tabs มุมมอง */}
       <Tabs
         value={viewTab}
-        onValueChange={setViewTab as (val: string) => void}
+        onValueChange={(val) => setViewTab(val)}
         className="mb-6"
       >
         <TabsList>
