@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -135,7 +134,7 @@ export default function MyRecipes() {
       {/* Tabs มุมมอง */}
       <Tabs
         value={viewTab}
-        onValueChange={setViewTab}
+        onValueChange={setViewTab as (val: string) => void}
         className="mb-6"
       >
         <TabsList>
