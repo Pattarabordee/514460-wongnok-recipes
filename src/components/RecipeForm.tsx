@@ -4,7 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type RecipeFormValues = {
   title: string;
@@ -32,6 +32,9 @@ interface RecipeFormProps {
   onSuccess: () => void;
 }
 
+const PRESET_DIFFICULTIES = ["ง่าย", "ปานกลาง", "ยาก", "ยากมาก"];
+const PRESET_PREP_TIMES = [10, 20, 30, 45, 60];
+
 const FormField = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="mb-3">
     <label className="block mb-1 text-emerald-800 font-medium">{label}</label>
@@ -41,7 +44,14 @@ const FormField = ({ label, children }: { label: string; children: React.ReactNo
 
 export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: RecipeFormProps) {
   const { user } = useAuthUser();
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<RecipeFormValues>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { isSubmitting }
+  } = useForm<RecipeFormValues>({
     defaultValues: {
       title: recipe?.title || "",
       description: recipe?.description || "",
@@ -51,6 +61,23 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     }
   });
 
+  // --- State for custom difficulty ---
+  const [customDifficulty, setCustomDifficulty] = useState<string>(
+    recipe && !PRESET_DIFFICULTIES.includes(recipe.difficulty) ? recipe.difficulty : ""
+  );
+  // --- State for custom prep time ---
+  const [prepTimeType, setPrepTimeType] = useState<"preset" | "custom">(
+    recipe && recipe.prep_time && !PRESET_PREP_TIMES.includes(recipe.prep_time)
+      ? "custom"
+      : "preset"
+  );
+  const [customPrepTime, setCustomPrepTime] = useState<number>(
+    recipe && recipe.prep_time && !PRESET_PREP_TIMES.includes(recipe.prep_time)
+      ? recipe.prep_time
+      : PRESET_PREP_TIMES[0]
+  );
+
+  // keep form in sync with props
   useEffect(() => {
     if (recipe) {
       reset({
@@ -60,8 +87,25 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
         prep_time: recipe.prep_time,
         difficulty: recipe.difficulty,
       });
+      setCustomDifficulty(
+        !PRESET_DIFFICULTIES.includes(recipe.difficulty)
+          ? recipe.difficulty
+          : ""
+      );
+      setPrepTimeType(
+        !PRESET_PREP_TIMES.includes(recipe.prep_time)
+          ? "custom"
+          : "preset"
+      );
+      setCustomPrepTime(
+        !PRESET_PREP_TIMES.includes(recipe.prep_time)
+          ? recipe.prep_time
+          : PRESET_PREP_TIMES[0]
+      );
     }
   }, [recipe, reset]);
+
+  // Submit handlers unchanged, just ensure values handled correctly below
 
   // 1. CREATE
   const createMutation = useMutation({
@@ -100,9 +144,24 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     onSuccess: onSuccess
   });
 
+  // Watch difficulty and prep_time to set the right value before submit
+  const selectedDifficulty = watch("difficulty");
+  const selectedPrepTime = watch("prep_time");
+
   const onSubmit = (data: RecipeFormValues) => {
-    if (mode === "new") return createMutation.mutate(data);
-    return updateMutation.mutate(data);
+    const finalData: RecipeFormValues = {
+      ...data,
+      difficulty:
+        selectedDifficulty === "อื่นๆ"
+          ? customDifficulty.trim() || "อื่นๆ"
+          : selectedDifficulty,
+      prep_time:
+        prepTimeType === "custom"
+          ? customPrepTime || 1
+          : Number(selectedPrepTime),
+    };
+    if (mode === "new") return createMutation.mutate(finalData);
+    return updateMutation.mutate(finalData);
   };
 
   return (
@@ -136,22 +195,97 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
             />
           </FormField>
           <div className="flex space-x-3">
+            {/* Prep time section */}
             <FormField label="เวลาทำ (นาที)">
-              <input
-                {...register("prep_time", { required: true, valueAsNumber: true, min: 1 })}
-                type="number"
-                min={1}
-                className="input input-bordered w-28"
-                required
-              />
+              <div>
+                <div className="flex gap-2 mb-1">
+                  {PRESET_PREP_TIMES.map((pt) => (
+                    <label key={pt} className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        className="radio radio-sm"
+                        name="prep-time"
+                        checked={prepTimeType === "preset" && Number(selectedPrepTime) === pt}
+                        onChange={() => {
+                          setPrepTimeType("preset");
+                          setValue("prep_time", pt);
+                        }}
+                      />
+                      <span>{pt}</span>
+                    </label>
+                  ))}
+                  <label className="flex items-center gap-1">
+                    <input
+                      type="radio"
+                      className="radio radio-sm"
+                      name="prep-time"
+                      checked={prepTimeType === "custom"}
+                      onChange={() => {
+                        setPrepTimeType("custom");
+                        setValue("prep_time", customPrepTime);
+                      }}
+                    />
+                    <span>กำหนดเอง</span>
+                  </label>
+                </div>
+                {prepTimeType === "custom" && (
+                  <div>
+                    <input
+                      type="number"
+                      className="input input-bordered w-24"
+                      min={1}
+                      value={customPrepTime}
+                      onChange={e => {
+                        const val = Math.max(1, Number(e.target.value));
+                        setCustomPrepTime(val);
+                        setValue("prep_time", val);
+                      }}
+                      required
+                    />{" "}
+                    <span className="text-xs text-gray-500">นาที</span>
+                  </div>
+                )}
+              </div>
             </FormField>
+            {/* Difficulty section */}
             <FormField label="ระดับความยาก">
-              <select {...register("difficulty", { required: true })} className="input input-bordered w-32" required>
-                <option value="ง่าย">ง่าย</option>
-                <option value="ปานกลาง">ปานกลาง</option>
-                <option value="ยาก">ยาก</option>
-                <option value="ยากมาก">ยากมาก</option>
-              </select>
+              <div>
+                <select
+                  {...register("difficulty", { required: true })}
+                  className="input input-bordered w-32"
+                  value={
+                    PRESET_DIFFICULTIES.includes(selectedDifficulty)
+                      ? selectedDifficulty
+                      : customDifficulty
+                      ? "อื่นๆ"
+                      : selectedDifficulty
+                  }
+                  onChange={e => {
+                    const val = e.target.value;
+                    setValue("difficulty", val);
+                    if (val === "อื่นๆ") {
+                      setCustomDifficulty("");
+                    }
+                  }}
+                  required
+                >
+                  {PRESET_DIFFICULTIES.map(diff => (
+                    <option key={diff} value={diff}>{diff}</option>
+                  ))}
+                  <option value="อื่นๆ">+ เพิ่มระดับเอง</option>
+                </select>
+                {selectedDifficulty === "อื่นๆ" && (
+                  <input
+                    type="text"
+                    className="input input-bordered w-32 mt-2"
+                    placeholder="เช่น พิเศษสุด/ศิลปะ"
+                    value={customDifficulty}
+                    maxLength={30}
+                    onChange={e => setCustomDifficulty(e.target.value)}
+                    required
+                  />
+                )}
+              </div>
             </FormField>
           </div>
           <div className="flex gap-2 justify-end mt-2">
