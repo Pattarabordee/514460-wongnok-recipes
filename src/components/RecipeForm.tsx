@@ -37,7 +37,7 @@ const PRESET_PREP_TIMES = [10, 20, 30, 45, 60];
 
 const FormField = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="mb-3">
-    <label className="block mb-1 text-emerald-800 font-medium">{label}</label>
+    <label className="block mb-1 text-emerald-800 font-medium text-sm">{label}</label>
     {children}
   </div>
 );
@@ -61,11 +61,9 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     }
   });
 
-  // --- State for custom difficulty ---
   const [customDifficulty, setCustomDifficulty] = useState<string>(
     recipe && !PRESET_DIFFICULTIES.includes(recipe.difficulty) ? recipe.difficulty : ""
   );
-  // --- State for custom prep time ---
   const [prepTimeType, setPrepTimeType] = useState<"preset" | "custom">(
     recipe && recipe.prep_time && !PRESET_PREP_TIMES.includes(recipe.prep_time)
       ? "custom"
@@ -111,7 +109,6 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
   const createMutation = useMutation({
     mutationFn: async (data: RecipeFormValues) => {
       if (!user) throw new Error("ต้องเข้าสู่ระบบก่อน");
-      // Add ingredients and instructions default values if missing
       const payload = {
         ...data,
         user_id: user.id,
@@ -128,7 +125,6 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
   const updateMutation = useMutation({
     mutationFn: async (data: RecipeFormValues) => {
       if (!user || !recipe) throw new Error("Invalid");
-      // Make sure to keep ingredients/instructions (fallback to empty if undefined)
       const payload = {
         ...data,
         ingredients: recipe.ingredients ?? [],
@@ -166,7 +162,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
 
   return (
     <Dialog open onOpenChange={onCancel}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <h2 className="text-lg font-bold mb-4 text-emerald-700">
           {mode === "new" ? "เพิ่มสูตรอาหารใหม่" : "แก้ไขสูตรอาหาร"}
         </h2>
@@ -175,14 +171,14 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
             <input
               {...register("title", { required: true })}
               type="text"
-              className="input input-bordered w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm"
               required
             />
           </FormField>
           <FormField label="รายละเอียด">
             <textarea
               {...register("description", { required: true })}
-              className="input input-bordered w-full min-h-[80px]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-300 min-h-[80px] text-sm"
               required
             />
           </FormField>
@@ -190,20 +186,20 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
             <input
               {...register("image_url")}
               type="text"
-              className="input input-bordered w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm"
               placeholder="https://example.com/image.jpg"
             />
           </FormField>
-          <div className="flex space-x-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Prep time section */}
             <FormField label="เวลาทำ (นาที)">
-              <div>
-                <div className="flex gap-2 mb-1">
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-1 text-xs">
                   {PRESET_PREP_TIMES.map((pt) => (
                     <label key={pt} className="flex items-center gap-1">
                       <input
                         type="radio"
-                        className="radio radio-sm"
+                        className="w-3 h-3"
                         name="prep-time"
                         checked={prepTimeType === "preset" && Number(selectedPrepTime) === pt}
                         onChange={() => {
@@ -214,10 +210,10 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
                       <span>{pt}</span>
                     </label>
                   ))}
-                  <label className="flex items-center gap-1">
+                  <label className="flex items-center gap-1 col-span-2">
                     <input
                       type="radio"
-                      className="radio radio-sm"
+                      className="w-3 h-3"
                       name="prep-time"
                       checked={prepTimeType === "custom"}
                       onChange={() => {
@@ -229,10 +225,10 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
                   </label>
                 </div>
                 {prepTimeType === "custom" && (
-                  <div>
+                  <div className="flex items-center gap-2">
                     <input
                       type="number"
-                      className="input input-bordered w-24"
+                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
                       min={1}
                       value={customPrepTime}
                       onChange={e => {
@@ -241,7 +237,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
                         setValue("prep_time", val);
                       }}
                       required
-                    />{" "}
+                    />
                     <span className="text-xs text-gray-500">นาที</span>
                   </div>
                 )}
@@ -249,10 +245,10 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
             </FormField>
             {/* Difficulty section */}
             <FormField label="ระดับความยาก">
-              <div>
+              <div className="space-y-2">
                 <select
                   {...register("difficulty", { required: true })}
-                  className="input input-bordered w-32"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   value={
                     PRESET_DIFFICULTIES.includes(selectedDifficulty)
                       ? selectedDifficulty
@@ -277,7 +273,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
                 {selectedDifficulty === "อื่นๆ" && (
                   <input
                     type="text"
-                    className="input input-bordered w-32 mt-2"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     placeholder="เช่น พิเศษสุด/ศิลปะ"
                     value={customDifficulty}
                     maxLength={30}
@@ -288,9 +284,21 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
               </div>
             </FormField>
           </div>
-          <div className="flex gap-2 justify-end mt-2">
-            <Button variant="ghost" type="button" onClick={onCancel} disabled={isSubmitting}>ยกเลิก</Button>
-            <Button type="submit" disabled={isSubmitting}>
+          <div className="flex flex-col sm:flex-row gap-2 justify-end mt-4 pt-4 border-t">
+            <Button 
+              variant="ghost" 
+              type="button" 
+              onClick={onCancel} 
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
+              ยกเลิก
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
               {mode === "new" ? "บันทึกสูตร" : "บันทึกการแก้ไข"}
             </Button>
           </div>

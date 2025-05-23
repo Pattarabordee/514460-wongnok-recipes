@@ -23,7 +23,6 @@ export default function MyRecipes() {
   const [openForm, setOpenForm] = useState<null | { mode: "new" } | { mode: "edit", recipe: MyRecipe }>(null);
   const queryClient = useQueryClient();
 
-  // ดึงสูตรอาหารของ user นี้
   const { data: myRecipes, isLoading: loadingMy } = useQuery({
     queryKey: ["my-recipes", user?.id],
     queryFn: async () => {
@@ -38,7 +37,6 @@ export default function MyRecipes() {
     enabled: !!user && !loading,
   });
 
-  // ลบสูตร
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("recipes").delete().eq("id", id);
@@ -56,46 +54,85 @@ export default function MyRecipes() {
   );
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <Link to="/" className="mr-2">
-          <Button variant="outline">
+    <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
+      {/* Responsive Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <Link to="/" className="order-2 sm:order-1">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <Home className="w-4 h-4 mr-2" />
             กลับหน้าหลัก
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold text-emerald-700">สูตรอาหารของฉัน</h1>
-        <Button onClick={() => setOpenForm({ mode: "new" })}>
-          <Plus className="w-4 h-4 mr-2" /> เพิ่มสูตรอาหารใหม่
+        
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-700 text-center order-1 sm:order-2">
+          สูตรอาหารของฉัน
+        </h1>
+        
+        <Button 
+          onClick={() => setOpenForm({ mode: "new" })}
+          size="sm"
+          className="order-3 w-full sm:w-auto text-xs sm:text-sm"
+        >
+          <Plus className="w-4 h-4 mr-2" /> 
+          <span className="hidden sm:inline">เพิ่มสูตรอาหารใหม่</span>
+          <span className="sm:hidden">เพิ่มสูตร</span>
         </Button>
       </div>
 
-      {loadingMy
-        ? <div className="flex justify-center items-center h-24"><Loader2 className="animate-spin" /></div>
-        : (myRecipes && myRecipes.length > 0) ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {myRecipes.map(r => (
-              <Card key={r.id} className="p-4 flex flex-col relative">
-                {r.image_url && (
-                  <img src={r.image_url} alt={r.title} className="w-full h-36 object-cover rounded mb-3" />
-                )}
-                <h2 className="text-lg font-semibold mb-1">{r.title}</h2>
-                <div className="text-xs text-gray-500 mb-2">{r.difficulty} • {r.prep_time} นาที</div>
-                <div className="text-gray-700 text-sm line-clamp-2 mb-3">{r.description}</div>
-                <div className="flex gap-2 mt-auto">
-                  <Button size="sm" variant="outline" onClick={() => setOpenForm({ mode: "edit", recipe: r })}>
-                    <Edit className="w-4 h-4" /> แก้ไข
-                  </Button>
-                  <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(r.id)}>
-                    <Trash2 className="w-4 h-4" /> ลบ
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center text-gray-500 my-16">ยังไม่มีสูตรอาหารของคุณ</div>
-        )}
+      {/* Content */}
+      {loadingMy ? (
+        <div className="flex justify-center items-center h-24">
+          <Loader2 className="animate-spin" />
+        </div>
+      ) : (myRecipes && myRecipes.length > 0) ? (
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {myRecipes.map(r => (
+            <Card key={r.id} className="p-3 sm:p-4 flex flex-col relative">
+              {r.image_url && (
+                <img 
+                  src={r.image_url} 
+                  alt={r.title} 
+                  className="w-full h-32 sm:h-36 lg:h-40 object-cover rounded mb-3" 
+                />
+              )}
+              <h2 className="text-base sm:text-lg font-semibold mb-1 line-clamp-2">{r.title}</h2>
+              <div className="text-xs text-gray-500 mb-2">
+                {r.difficulty} • {r.prep_time} นาที
+              </div>
+              <div className="text-gray-700 text-xs sm:text-sm line-clamp-2 mb-3 flex-1">
+                {r.description}
+              </div>
+              
+              {/* Responsive Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2 mt-auto">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => setOpenForm({ mode: "edit", recipe: r })}
+                  className="text-xs flex-1"
+                >
+                  <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> 
+                  แก้ไข
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="destructive" 
+                  onClick={() => deleteMutation.mutate(r.id)}
+                  className="text-xs flex-1"
+                >
+                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> 
+                  ลบ
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-gray-500 my-16 px-4">
+          <p className="text-sm sm:text-base">ยังไม่มีสูตรอาหารของคุณ</p>
+          <p className="text-xs sm:text-sm mt-2">เริ่มต้นเพิ่มสูตรอาหารแรกของคุณได้เลย!</p>
+        </div>
+      )}
       
       {openForm && (
         <RecipeForm
