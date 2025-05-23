@@ -27,7 +27,7 @@ const TABS = [
 ] as const;
 
 // Step 2: Define TabValue type 
-type TabValue = typeof TABS[number]["value"];
+type TabValue = "my" | "member" | "rating";
 
 export default function MyRecipes() {
   const { user, loading } = useAuthUser();
@@ -135,8 +135,7 @@ export default function MyRecipes() {
       {/* Tabs มุมมอง */}
       <Tabs
         value={viewTab}
-        // setViewTab รับค่าที่เป็น TabValue เท่านั้น!
-        onValueChange={(val: TabValue) => setViewTab(val)}
+        onValueChange={(value) => setViewTab(value as TabValue)}
         className="mb-6"
       >
         <TabsList>
