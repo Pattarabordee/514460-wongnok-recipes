@@ -1,4 +1,5 @@
-import { X, BookOpen } from "lucide-react";
+
+import { X, BookOpen, Star } from "lucide-react";
 import RatingStars from "@/components/RatingStars";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { useState } from "react";
@@ -120,7 +121,6 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
                       {myRating ? "แก้ไขคะแนนของคุณ:" : "ให้คะแนนสูตรนี้:"}
                     </span>
                     <div className="flex gap-1">
-                      {/* FIX: Only show five stars */}
                       {Array.from({ length: 5 }).map((_, i) => (
                         <button
                           key={i}
@@ -134,7 +134,18 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
                           onClick={() => handleRate(i + 1)}
                           aria-label={`ให้ ${i + 1} ดาว`}
                         >
-                          <RatingStars rating={i + 1} />
+                          <Star
+                            size={24}
+                            className={
+                              (hoverStar !== null
+                                ? hoverStar >= i + 1
+                                : myRating
+                                ? myRating >= i + 1
+                                : false)
+                                ? "text-amber-400 fill-amber-400"
+                                : "text-gray-300"
+                            }
+                          />
                         </button>
                       ))}
                     </div>
