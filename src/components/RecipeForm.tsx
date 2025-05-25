@@ -41,7 +41,7 @@ const PRESET_DIFFICULTIES = ["ง่าย", "ปานกลาง", "ยาก
 const PRESET_PREP_TIMES = [10, 20, 30, 45, 60];
 
 export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: RecipeFormProps) {
-  const { user, loading } = useAuthUser();
+  const { user, profile, loading } = useAuthUser();
   const {
     register,
     handleSubmit,
@@ -203,6 +203,15 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
           ? customPrepTime || 1
           : Number(selectedPrepTime),
     };
+
+    // DEBUG LOGGING: Add log to see user/profile/finalData before mutation
+    console.log("[RecipeForm] onSubmit debug info:", {
+      user,
+      profile,
+      finalData,
+      userId: user?.id,
+      profileId: profile?.id,
+    });
 
     // Prevent submission if user_id is missing
     if (!user.id) {
