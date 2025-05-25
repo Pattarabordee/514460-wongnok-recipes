@@ -147,10 +147,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "recipes_user_id_fkey"
+            foreignKeyName: "recipes_user_id_fkey1"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
