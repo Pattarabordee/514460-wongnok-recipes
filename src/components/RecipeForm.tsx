@@ -319,6 +319,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
           {mode === "new" ? "เพิ่มสูตรอาหารใหม่" : "แก้ไขสูตรอาหาร"}
         </h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+          {/* Basic Info */}
           <RecipeFormField label="ชื่อสูตรอาหาร">
             <input
               {...register("title", { required: true })}
@@ -342,6 +343,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
               placeholder="https://example.com/image.jpg"
             />
           </RecipeFormField>
+          {/* Prep Time & Difficulty */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <RecipeFormField label="เวลาทำ (นาที)">
               <div className="space-y-2">
@@ -434,21 +436,26 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
               </div>
             </RecipeFormField>
           </div>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <RecipeFormField label="วัตถุดิบหรือส่วนผสม">
-              <IngredientListInput
-                value={ingredients}
-                onChange={setIngredients}
-                disabled={isSubmitting}
-              />
-            </RecipeFormField>
-            <RecipeFormField label="วิธีทำ">
-              <InstructionListInput
-                value={instructions}
-                onChange={setInstructions}
-                disabled={isSubmitting}
-              />
-            </RecipeFormField>
+          {/* Ingredient and Instruction Section - STACK VERTICALLY, with more gap */}
+          <div className="flex flex-col gap-6 mt-4">
+            <div>
+              <RecipeFormField label="วัตถุดิบหรือส่วนผสม">
+                <IngredientListInput
+                  value={ingredients}
+                  onChange={setIngredients}
+                  disabled={isSubmitting}
+                />
+              </RecipeFormField>
+            </div>
+            <div>
+              <RecipeFormField label="วิธีทำ">
+                <InstructionListInput
+                  value={instructions}
+                  onChange={setInstructions}
+                  disabled={isSubmitting}
+                />
+              </RecipeFormField>
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-end mt-4 pt-4 border-t">
             <Button

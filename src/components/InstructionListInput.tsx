@@ -31,9 +31,9 @@ const InstructionListInput = ({ value, onChange, disabled }: InstructionListInpu
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3 w-full">
       {value.map((step, i) => (
-        <div key={i} className="flex gap-2 items-center">
+        <div key={i} className="flex flex-row gap-3 items-center w-full">
           <textarea
             value={step}
             className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm min-h-[38px]"
