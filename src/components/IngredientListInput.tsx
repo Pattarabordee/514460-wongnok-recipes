@@ -9,19 +9,17 @@ export interface Ingredient {
   unit: string;
 }
 
-const DEFAULT_UNITS = [
-  "กรัม", "กิโลกรัม", "มิลลิกรัม",
-  "มล.", "ลิตร",
-  "ช้อนชา", "ช้อนโต๊ะ", "ช้อนใหญ่", "ถ้วย", "ชิ้น", "ฟอง", "หยิบมือ", "แท่ง", "แผ่น", "หัว", "ต้น", "กลีบ", "ก้าน"
-];
-
 interface IngredientListInputProps {
   value: Ingredient[];
   onChange: (val: Ingredient[]) => void;
   disabled?: boolean;
 }
 
-const IngredientListInput = ({ value, onChange, disabled }: IngredientListInputProps) => {
+const IngredientListInput = ({
+  value,
+  onChange,
+  disabled,
+}: IngredientListInputProps) => {
   useEffect(() => {
     if (!value || value.length === 0) {
       onChange([{ name: "", quantity: "", unit: "" }]);
@@ -45,52 +43,40 @@ const IngredientListInput = ({ value, onChange, disabled }: IngredientListInputP
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {value.map((ingredient, i) => (
-        <div key={i} className="flex gap-2 items-center">
+        <div
+          key={i}
+          className="flex flex-row gap-3 items-center w-full"
+        >
           <input
             type="text"
             className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm"
             placeholder={`วัตถุดิบ #${i + 1}`}
             value={ingredient.name}
-            onChange={e => handleChange(i, "name", e.target.value)}
+            onChange={(e) => handleChange(i, "name", e.target.value)}
             disabled={disabled}
             required
           />
           <input
             type="text"
-            className="w-16 px-2 py-2 border border-gray-300 rounded text-sm"
+            className="w-20 min-w-[72px] px-2 py-2 border border-gray-300 rounded text-sm"
             placeholder="จำนวน"
             value={ingredient.quantity}
-            onChange={e => handleChange(i, "quantity", e.target.value)}
+            onChange={(e) => handleChange(i, "quantity", e.target.value)}
             disabled={disabled}
             required
             inputMode="decimal"
           />
-          <select
-            className="w-24 px-2 py-2 border border-gray-300 rounded text-sm"
+          <input
+            type="text"
+            className="w-28 min-w-[96px] px-2 py-2 border border-gray-300 rounded text-sm"
+            placeholder="หน่วย (เช่น กรัม, ช้อนโต๊ะ)"
             value={ingredient.unit}
-            onChange={e => handleChange(i, "unit", e.target.value)}
+            onChange={(e) => handleChange(i, "unit", e.target.value)}
             disabled={disabled}
             required
-          >
-            <option value="">เลือกหน่วย</option>
-            {DEFAULT_UNITS.map(unit => (
-              <option key={unit} value={unit}>{unit}</option>
-            ))}
-            <option value="อื่นๆ">อื่นๆ...</option>
-          </select>
-          {ingredient.unit === "อื่นๆ" && (
-            <input
-              type="text"
-              className="w-16 px-2 py-2 border border-gray-300 rounded text-sm"
-              placeholder="หน่วย"
-              value={ingredient.unit !== "อื่นๆ" ? ingredient.unit : ""}
-              onChange={e => handleChange(i, "unit", e.target.value)}
-              disabled={disabled}
-              required
-            />
-          )}
+          />
           <Button
             type="button"
             size="icon"
