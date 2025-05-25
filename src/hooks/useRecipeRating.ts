@@ -53,7 +53,7 @@ export function useRecipeRating({ recipeId }: UseRecipeRatingOptions) {
     },
   });
 
-  // 3. Insert or update rating
+  // 3. Insert rating - user can only rate once!
   const rateMutation = useMutation({
     mutationFn: async (newRating: number) => {
       if (!user) throw new Error("ต้องเข้าสู่ระบบก่อนให้คะแนน");
@@ -66,23 +66,18 @@ export function useRecipeRating({ recipeId }: UseRecipeRatingOptions) {
         .maybeSingle();
       if (existingError) throw existingError;
       if (existing) {
-        // Update
-        const { error } = await supabase
-          .from("ratings")
-          .update({ rating: newRating })
-          .eq("id", existing.id);
-        if (error) throw error;
-      } else {
-        // Insert
-        const { error } = await supabase.from("ratings").insert([
-          {
-            user_id: user.id,
-            recipe_id: recipeId,
-            rating: newRating,
-          },
-        ]);
-        if (error) throw error;
+        // User already rated, cannot rate again!
+        throw new Error("คุณได้ให้คะแนนสูตรนี้ไปแล้ว ไม่สามารถให้ใหม่ได้");
       }
+      // Insert
+      const { error } = await supabase.from("ratings").insert([
+        {
+          user_id: user.id,
+          recipe_id: recipeId,
+          rating: newRating,
+        },
+      ]);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-rating", recipeId, user?.id] });

@@ -1,4 +1,3 @@
-
 import { X, BookOpen, Star } from "lucide-react";
 import RatingStars from "@/components/RatingStars";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -37,7 +36,8 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
   const canRate =
     !!user &&
     (user.id !== recipe.authorId) &&
-    !rateIsPending;
+    !rateIsPending &&
+    myRating === null; // Disallow if already rated
 
   const avgToDisplay = aggregate ? aggregate.avg : recipe.rating;
   const countToDisplay = aggregate ? aggregate.count : recipe.ratingsCount;
@@ -53,6 +53,14 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
     if (user.id === recipe.authorId) {
       toast({
         title: "ไม่สามารถให้คะแนนสูตรอาหารของตนเองได้",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (myRating !== null) {
+      toast({
+        title: "คุณได้ให้คะแนนสูตรนี้ไปแล้ว",
+        description: "ไม่สามารถเปลี่ยนแปลงหรือแก้ไขคะแนนได้อีก",
         variant: "destructive",
       });
       return;
@@ -115,10 +123,10 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
                   <span className="text-sm text-gray-500">({countToDisplay} คะแนนรีวิว)</span>
                 </div>
                 
-                {user && canRate && (
+                {user && (user.id !== recipe.authorId) && (
                   <div className="space-y-2">
                     <span className="text-sm text-emerald-600">
-                      {myRating ? "แก้ไขคะแนนของคุณ:" : "ให้คะแนนสูตรนี้:"}
+                      {myRating ? "คุณได้ให้คะแนนแล้ว:" : "ให้คะแนนสูตรนี้:"}
                     </span>
                     <div className="flex gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
@@ -128,7 +136,7 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
                           className={`p-0 m-0 bg-transparent border-none transition-transform ${
                             hoverStar !== null && hoverStar >= i + 1 ? "scale-110" : ""
                           }`}
-                          disabled={rateIsPending || user.id === recipe.authorId}
+                          disabled={rateIsPending || user.id === recipe.authorId || myRating !== null}
                           onMouseEnter={() => setHoverStar(i + 1)}
                           onMouseLeave={() => setHoverStar(null)}
                           onClick={() => handleRate(i + 1)}
@@ -161,6 +169,9 @@ export default function RecipeDetailModal({ recipe, onClose }: RecipeDetailModal
                   <span className="text-sm text-gray-400">
                     คุณไม่สามารถให้คะแนนสูตรของตนเองได้
                   </span>
+                )}
+                {user && user.id !== recipe.authorId && myRating !== null && (
+                  <span className="text-xs text-gray-400">คุณสามารถให้คะแนนสูตรนี้ได้เพียง 1 ครั้งเท่านั้น</span>
                 )}
               </div>
 
