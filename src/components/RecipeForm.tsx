@@ -165,6 +165,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
   }
 
   // 2. Unauthenticated: block everything except cancel
+  // เพิ่มบล็อกป้องกันการ submit ถ้าไม่มี user หรือไม่มี user.id
   if (!user || !user.id) {
     return (
       <RecipeFormUnauthDialog open onOpenChange={onCancel} />
@@ -203,24 +204,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
           : Number(selectedPrepTime),
     };
 
-    // Debug: ถ้าไม่มี user_id, ห้ามส่งข้อมูลและ log
-    if (!user.id) {
-      console.warn("[RecipeForm] Blocking submit: No user.id");
-      toast({
-        title: "ไม่สามารถบันทึกสูตรอาหารได้",
-        description: "กรุณาเข้าสู่ระบบก่อนบันทึกสูตรอาหาร",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    console.log("[RecipeForm Submit]", {
-      user,
-      userId: user.id,
-      finalData
-    });
-
-    // Prevent submission if user_id is missing or undefined
+    // Prevent submission if user_id is missing
     if (!user.id) {
       toast({
         title: "ไม่สามารถบันทึกสูตรอาหารได้",
@@ -230,40 +214,35 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
       return;
     }
 
+    const handleFkError = (inputError: any, defaultTitle: string) => {
+      let desc = inputError?.message || String(inputError) || "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง";
+      // ตรวจหา foreign key constraint error (user_id ไม่มีในระบบ)
+      if (
+        typeof desc === "string" &&
+        desc.toLowerCase().includes("violates foreign key constraint") &&
+        desc.includes("user_id")
+      ) {
+        desc =
+          "ไม่สามารถบันทึกสูตรอาหารได้ เนื่องจากบัญชีผู้ใช้ของคุณหมดอายุหรือขาดการเชื่อมโยงกับระบบ กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ หรือรีเฟรชหน้า แล้วลองอีกครั้ง";
+      }
+      toast({
+        title: defaultTitle,
+        description: desc,
+        variant: "destructive"
+      });
+    };
+
     if (mode === "new") {
       createMutation.mutate(finalData, {
         onError: (error: any) => {
-          let newDescription = error?.message || String(error) || "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง";
-          // เพิ่มข้อความแนะนำเฉพาะกรณี foreign key error
-          if (
-            typeof newDescription === "string" &&
-            newDescription.includes("violates foreign key constraint")
-          ) {
-            newDescription = "เกิดปัญหากับบัญชีผู้ใช้ กรุณาเข้าสู่ระบบใหม่ หรือรีเฟรชหน้าแล้วลองอีกครั้ง";
-          }
-          toast({
-            title: "บันทึกสูตรอาหารล้มเหลว",
-            description: newDescription,
-            variant: "destructive",
-          });
+          handleFkError(error, "บันทึกสูตรอาหารล้มเหลว");
         },
       });
       return;
     }
     updateMutation.mutate(finalData, {
       onError: (error: any) => {
-        let newDescription = error?.message || String(error) || "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง";
-        if (
-          typeof newDescription === "string" &&
-          newDescription.includes("violates foreign key constraint")
-        ) {
-          newDescription = "เกิดปัญหากับบัญชีผู้ใช้ กรุณาเข้าสู่ระบบใหม่ หรือรีเฟรชหน้าแล้วลองอีกครั้ง";
-        }
-        toast({
-          title: "บันทึกการแก้ไขสูตรอาหารล้มเหลว",
-          description: newDescription,
-          variant: "destructive",
-        });
+        handleFkError(error, "บันทึกการแก้ไขสูตรอาหารล้มเหลว");
       },
     });
   };
