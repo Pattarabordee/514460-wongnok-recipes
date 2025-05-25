@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 import RecipeFormField from "./RecipeFormField";
 import RecipeFormLoaderDialog from "./RecipeFormLoaderDialog";
 import RecipeFormUnauthDialog from "./RecipeFormUnauthDialog";
-import IngredientListInput from "./IngredientListInput";
+import IngredientListInput, { Ingredient } from "./IngredientListInput";
 import InstructionListInput from "./InstructionListInput";
 
 type RecipeFormValues = {
@@ -76,8 +76,10 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
   );
 
   // Added states for ingredients/instructions as string arrays.
-  const [ingredients, setIngredients] = useState<string[]>(
-    (recipe?.ingredients && Array.isArray(recipe.ingredients)) ? recipe.ingredients : [""]
+  const [ingredients, setIngredients] = useState<Ingredient[]>(
+    (recipe?.ingredients && Array.isArray(recipe.ingredients))
+      ? recipe.ingredients
+      : [{ name: "", quantity: "", unit: "" }]
   );
   const [instructions, setInstructions] = useState<string[]>(
     (recipe?.instructions && Array.isArray(recipe.instructions)) ? recipe.instructions : [""]
@@ -109,13 +111,13 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
           : PRESET_PREP_TIMES[0]
       );
       setIngredients(
-        (recipe.ingredients && Array.isArray(recipe.ingredients)) ? recipe.ingredients : [""]
+        (recipe.ingredients && Array.isArray(recipe.ingredients)) ? recipe.ingredients : [{ name: "", quantity: "", unit: "" }]
       );
       setInstructions(
         (recipe.instructions && Array.isArray(recipe.instructions)) ? recipe.instructions : [""]
       );
     } else {
-      setIngredients([""]);
+      setIngredients([{ name: "", quantity: "", unit: "" }]);
       setInstructions([""]);
     }
   }, [recipe, reset]);
@@ -211,13 +213,27 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
       return;
     }
 
-    // Filter and prepare ingredient/instruction arrays
-    const safeIngredients = ingredients.map(s => s.trim()).filter(Boolean);
+    // กรอง ingredients ให้เหลือแต่รายการที่กรอก name และ quantity/unit (ป้องกันช่องว่าง)
+    const safeIngredients = ingredients
+      .map(i => ({
+        name: i.name.trim(),
+        quantity: i.quantity.trim(),
+        unit: i.unit.trim(),
+      }))
+      .filter(i => i.name);
+
     const safeInstructions = instructions.map(s => s.trim()).filter(Boolean);
 
     if (safeIngredients.length === 0) {
       toast({
         title: "โปรดเพิ่มวัตถุดิบอย่างน้อย 1 รายการ",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (safeIngredients.some(i => !i.quantity || !i.unit)) {
+      toast({
+        title: "โปรดระบุปริมาณและหน่วยของวัตถุดิบทุกตัว",
         variant: "destructive"
       });
       return;

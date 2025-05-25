@@ -15,6 +15,8 @@ export interface MyRecipe {
   prep_time: number;
   difficulty: string;
   description: string;
+  ingredients?: any;
+  instructions?: any;
 }
 
 export default function MyRecipes() {
@@ -27,7 +29,7 @@ export default function MyRecipes() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("recipes")
-        .select("id, title, image_url, prep_time, difficulty, description")
+        .select("id, title, image_url, prep_time, difficulty, description, ingredients, instructions")
         .eq("user_id", user?.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -120,7 +122,26 @@ export default function MyRecipes() {
               <div className="text-gray-700 text-xs sm:text-sm line-clamp-2 mb-3 flex-1">
                 {r.description}
               </div>
-              
+              {/* NEW: แสดงรายการวัตถุดิบแบบย่อ */}
+              {Array.isArray(r.ingredients) && r.ingredients[0]?.name && (
+                <div className="mt-1 mb-3">
+                  <div className="text-xs font-bold text-emerald-700 mb-0.5">วัตถุดิบ:</div>
+                  <ul className="list-disc ml-5 text-xs text-gray-500">
+                    {r.ingredients.slice(0, 4).map((ing, idx) =>
+                      typeof ing === "object" ? (
+                        <li key={idx}>
+                          {ing.name}
+                          {ing.quantity && ` ${ing.quantity}`}
+                          {ing.unit && ` ${ing.unit}`}
+                        </li>
+                      ) : (
+                        <li key={idx}>{ing}</li>
+                      )
+                    )}
+                    {r.ingredients.length > 4 && <li>...</li>}
+                  </ul>
+                </div>
+              )}
               {/* Responsive Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-2 mt-auto">
                 <Button 
