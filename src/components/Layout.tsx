@@ -1,4 +1,3 @@
-
 import { ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -47,7 +46,13 @@ const Layout = ({ children }: { children: ReactNode }) => {
               </Button>
             </Link>
           )}
-          
+          {user && (
+            <Link to="/profile">
+              <Button variant="ghost" size="sm" className="text-xs lg:text-sm">
+                แก้ไขโปรไฟล์
+              </Button>
+            </Link>
+          )}
           {loading ? null : !user ? (
             <Button variant="secondary" onClick={() => navigate("/auth")} className="flex items-center gap-2 text-xs lg:text-sm">
               <LogIn className="w-4 h-4" /> เข้าสู่ระบบ
@@ -95,6 +100,14 @@ const Layout = ({ children }: { children: ReactNode }) => {
                 <Link to="/my-recipes" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full justify-start">
                     สูตรอาหารของฉัน
+                  </Button>
+                </Link>
+              )}
+              
+              {user && (
+                <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start">
+                    แก้ไขโปรไฟล์
                   </Button>
                 </Link>
               )}
