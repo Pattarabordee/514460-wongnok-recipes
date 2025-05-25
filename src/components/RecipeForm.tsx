@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -6,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 type RecipeFormValues = {
   title: string;
@@ -44,7 +46,7 @@ const FormField = ({ label, children }: { label: string; children: React.ReactNo
 );
 
 export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: RecipeFormProps) {
-  const { user } = useAuthUser();
+  const { user, loading } = useAuthUser();
   const {
     register,
     handleSubmit,
@@ -76,7 +78,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
       : PRESET_PREP_TIMES[0]
   );
 
-  // keep form in sync with props
+  // Sync with props
   useEffect(() => {
     if (recipe) {
       reset({
@@ -104,16 +106,18 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     }
   }, [recipe, reset]);
 
-  // 1. CREATE
+  // CREATE
   const createMutation = useMutation({
     mutationFn: async (data: RecipeFormValues) => {
-      if (!user || !user.id) throw new Error("กรุณาเข้าสู่ระบบก่อนบันทึกสูตรอาหาร");
+      if (!user || !user.id)
+        throw new Error("กรุณาเข้าสู่ระบบก่อนบันทึกสูตรอาหาร");
       const payload = {
         ...data,
         user_id: user.id,
         ingredients: [],
         instructions: [],
       };
+      console.log("[Create] ส่ง payload:", payload, "(user.id = ", user?.id, ")");
       const { error } = await supabase.from("recipes").insert(payload);
       if (error) throw error;
     },
@@ -127,15 +131,17 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     }
   });
 
-  // 2. UPDATE
+  // UPDATE
   const updateMutation = useMutation({
     mutationFn: async (data: RecipeFormValues) => {
-      if (!user || !recipe) throw new Error("กรุณาเข้าสู่ระบบก่อนแก้ไขสูตรอาหาร");
+      if (!user || !recipe)
+        throw new Error("กรุณาเข้าสู่ระบบก่อนแก้ไขสูตรอาหาร");
       const payload = {
         ...data,
         ingredients: recipe.ingredients ?? [],
         instructions: recipe.instructions ?? [],
       };
+      console.log("[Update] ส่ง payload:", payload, "(user.id = ", user?.id, ")");
       const { error } = await supabase
         .from("recipes")
         .update(payload)
@@ -153,11 +159,24 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     }
   });
 
-  // Watch difficulty and prep_time to set the right value before submit
   const selectedDifficulty = watch("difficulty");
   const selectedPrepTime = watch("prep_time");
 
-  // Prevent rendering/usage if user hasn't logged in
+  // 1. Loading state: show loader 
+  if (loading) {
+    return (
+      <Dialog open onOpenChange={onCancel}>
+        <DialogContent className="max-w-md flex flex-col items-center justify-center text-center gap-5 min-h-[150px]">
+          <Loader2 className="animate-spin w-8 h-8 text-emerald-600 mx-auto" />
+          <div className="text-emerald-700 font-semibold text-lg">
+            กำลังตรวจสอบสิทธิ์ผู้ใช้...
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // 2. Unauthenticated: block everything except cancel
   if (!user || !user.id) {
     return (
       <Dialog open onOpenChange={onCancel}>
@@ -169,8 +188,8 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     );
   }
 
+  // 3. Submission guard: fail-safe in handleSubmit
   const onSubmit = (data: RecipeFormValues) => {
-    // ** เพิ่ม safety check ป้องกันแน่นหนา **
     if (!user || !user.id) {
       toast({
         title: "คุณยังไม่ได้เข้าสู่ระบบ",
@@ -196,6 +215,14 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
       userId: user.id,
       finalData
     });
+    if (!user.id) {
+      toast({
+        title: "ไม่พบข้อมูลผู้ใช้",
+        description: "Session ผู้ใช้หมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง",
+        variant: "destructive"
+      });
+      return;
+    }
     if (mode === "new") {
       createMutation.mutate(finalData, {
         onError: (error: any) => {
@@ -367,4 +394,5 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
   );
 }
 
-// Note: This file is now about 340 lines long. แนะนำให้รีแฟคเตอร์ให้เล็กลงเพื่อดูแลรักษาง่ายขึ้น แจ้งได้เลยถ้าต้องการ!
+// Note: This file is now about 370+ lines long. 
+// ควรรีแฟคเตอร์ให้แยกไฟล์ย่อย ถ้าต้องการให้แบ่ง component ย่อย/ไฟล์ แจ้งฉันได้เลยนะคะ
