@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -8,6 +7,9 @@ import { useAuthUser } from "@/hooks/useAuthUser";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
+import RecipeFormField from "./RecipeFormField";
+import RecipeFormLoaderDialog from "./RecipeFormLoaderDialog";
+import RecipeFormUnauthDialog from "./RecipeFormUnauthDialog";
 
 type RecipeFormValues = {
   title: string;
@@ -37,13 +39,6 @@ interface RecipeFormProps {
 
 const PRESET_DIFFICULTIES = ["ง่าย", "ปานกลาง", "ยาก", "ยากมาก"];
 const PRESET_PREP_TIMES = [10, 20, 30, 45, 60];
-
-const FormField = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="mb-3">
-    <label className="block mb-1 text-emerald-800 font-medium text-sm">{label}</label>
-    {children}
-  </div>
-);
 
 export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: RecipeFormProps) {
   const { user, loading } = useAuthUser();
@@ -165,26 +160,14 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
   // 1. Loading state: show loader 
   if (loading) {
     return (
-      <Dialog open onOpenChange={onCancel}>
-        <DialogContent className="max-w-md flex flex-col items-center justify-center text-center gap-5 min-h-[150px]">
-          <Loader2 className="animate-spin w-8 h-8 text-emerald-600 mx-auto" />
-          <div className="text-emerald-700 font-semibold text-lg">
-            กำลังตรวจสอบสิทธิ์ผู้ใช้...
-          </div>
-        </DialogContent>
-      </Dialog>
+      <RecipeFormLoaderDialog open onOpenChange={onCancel} />
     );
   }
 
   // 2. Unauthenticated: block everything except cancel
   if (!user || !user.id) {
     return (
-      <Dialog open onOpenChange={onCancel}>
-        <DialogContent className="max-w-md text-center flex flex-col items-center justify-center gap-6">
-          <div className="text-lg font-bold text-emerald-700 mt-2">กรุณาเข้าสู่ระบบก่อนเพิ่มหรือแก้ไขสูตรอาหารของคุณ</div>
-          <Button onClick={onCancel} className="mx-auto mt-4">กลับ</Button>
-        </DialogContent>
-      </Dialog>
+      <RecipeFormUnauthDialog open onOpenChange={onCancel} />
     );
   }
 
@@ -253,32 +236,31 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
           {mode === "new" ? "เพิ่มสูตรอาหารใหม่" : "แก้ไขสูตรอาหาร"}
         </h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-          <FormField label="ชื่อสูตรอาหาร">
+          <RecipeFormField label="ชื่อสูตรอาหาร">
             <input
               {...register("title", { required: true })}
               type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm"
               required
             />
-          </FormField>
-          <FormField label="รายละเอียด">
+          </RecipeFormField>
+          <RecipeFormField label="รายละเอียด">
             <textarea
               {...register("description", { required: true })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-300 min-h-[80px] text-sm"
               required
             />
-          </FormField>
-          <FormField label="ลิงก์รูปอาหาร (optional)">
+          </RecipeFormField>
+          <RecipeFormField label="ลิงก์รูปอาหาร (optional)">
             <input
               {...register("image_url")}
               type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm"
               placeholder="https://example.com/image.jpg"
             />
-          </FormField>
+          </RecipeFormField>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Prep time section */}
-            <FormField label="เวลาทำ (นาที)">
+            <RecipeFormField label="เวลาทำ (นาที)">
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-1 text-xs">
                   {PRESET_PREP_TIMES.map((pt) => (
@@ -328,9 +310,8 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
                   </div>
                 )}
               </div>
-            </FormField>
-            {/* Difficulty section */}
-            <FormField label="ระดับความยาก">
+            </RecipeFormField>
+            <RecipeFormField label="ระดับความยาก">
               <div className="space-y-2">
                 <select
                   {...register("difficulty", { required: true })}
@@ -368,7 +349,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
                   />
                 )}
               </div>
-            </FormField>
+            </RecipeFormField>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-end mt-4 pt-4 border-t">
             <Button 
@@ -393,6 +374,3 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     </Dialog>
   );
 }
-
-// Note: This file is now about 370+ lines long. 
-// ควรรีแฟคเตอร์ให้แยกไฟล์ย่อย ถ้าต้องการให้แบ่ง component ย่อย/ไฟล์ แจ้งฉันได้เลยนะคะ
