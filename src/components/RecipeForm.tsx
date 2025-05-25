@@ -173,6 +173,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
 
   // 3. Submission guard: fail-safe in handleSubmit
   const onSubmit = (data: RecipeFormValues) => {
+    // Guard: Don't allow submit if user or user.id is missing
     if (!user || !user.id) {
       toast({
         title: "คุณยังไม่ได้เข้าสู่ระบบ",
@@ -181,6 +182,15 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
       });
       return;
     }
+    if (!user.id) {
+      toast({
+        title: "ไม่พบข้อมูลผู้ใช้",
+        description: "Session ผู้ใช้หมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const finalData: RecipeFormValues = {
       ...data,
       difficulty:
@@ -192,26 +202,48 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
           ? customPrepTime || 1
           : Number(selectedPrepTime),
     };
-    // log ค่า payload และ user ขณะ submit
+
+    // Debug: ถ้าไม่มี user_id, ห้ามส่งข้อมูลและ log
+    if (!user.id) {
+      console.warn("[RecipeForm] Blocking submit: No user.id");
+      toast({
+        title: "ไม่สามารถบันทึกสูตรอาหารได้",
+        description: "กรุณาเข้าสู่ระบบก่อนบันทึกสูตรอาหาร",
+        variant: "destructive"
+      });
+      return;
+    }
+
     console.log("[RecipeForm Submit]", {
       user,
       userId: user.id,
       finalData
     });
+
+    // Prevent submission if user_id is missing or undefined
     if (!user.id) {
       toast({
-        title: "ไม่พบข้อมูลผู้ใช้",
-        description: "Session ผู้ใช้หมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง",
+        title: "ไม่สามารถบันทึกสูตรอาหารได้",
+        description: "เกิดข้อผิดพลาด ไม่พบรหัสผู้ใช้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง",
         variant: "destructive"
       });
       return;
     }
+
     if (mode === "new") {
       createMutation.mutate(finalData, {
         onError: (error: any) => {
+          let newDescription = error?.message || String(error) || "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง";
+          // เพิ่มข้อความแนะนำเฉพาะกรณี foreign key error
+          if (
+            typeof newDescription === "string" &&
+            newDescription.includes("violates foreign key constraint")
+          ) {
+            newDescription = "เกิดปัญหากับบัญชีผู้ใช้ กรุณาเข้าสู่ระบบใหม่ หรือรีเฟรชหน้าแล้วลองอีกครั้ง";
+          }
           toast({
             title: "บันทึกสูตรอาหารล้มเหลว",
-            description: error?.message || String(error) || "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง",
+            description: newDescription,
             variant: "destructive",
           });
         },
@@ -220,9 +252,16 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     }
     updateMutation.mutate(finalData, {
       onError: (error: any) => {
+        let newDescription = error?.message || String(error) || "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง";
+        if (
+          typeof newDescription === "string" &&
+          newDescription.includes("violates foreign key constraint")
+        ) {
+          newDescription = "เกิดปัญหากับบัญชีผู้ใช้ กรุณาเข้าสู่ระบบใหม่ หรือรีเฟรชหน้าแล้วลองอีกครั้ง";
+        }
         toast({
           title: "บันทึกการแก้ไขสูตรอาหารล้มเหลว",
-          description: error?.message || String(error) || "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง",
+          description: newDescription,
           variant: "destructive",
         });
       },
