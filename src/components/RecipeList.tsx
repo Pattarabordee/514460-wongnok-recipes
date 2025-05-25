@@ -21,14 +21,23 @@ type RecipeAggregates = {
   };
 };
 
+// Profile สำหรับ lookup username
+type RecipeProfile = {
+  id: string;
+  username: string | null;
+};
+
 const RecipeList = () => {
   const [recipes, setRecipes] = useState<SupabaseRecipe[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [ratingAggs, setRatingAggs] = useState<RecipeAggregates>({});
   const [loadingAgg, setLoadingAgg] = useState(false);
 
+  // ดึงสูตรอาหารทั้งหมด
   useEffect(() => {
     async function fetchRecipes() {
       setLoading(true);
@@ -49,6 +58,42 @@ const RecipeList = () => {
     fetchRecipes();
   }, []);
 
+  // ดึงข้อมูล profiles ของ user เจ้าของสูตรแต่ละคน
+  useEffect(() => {
+    async function fetchProfiles() {
+      if (!recipes.length) return setProfiles({});
+      setLoadingProfiles(true);
+      // หา user_id ไม่ซ้ำในสูตรอาหารทั้งหมด
+      const uniqueUserIds = Array.from(new Set(recipes.map(r => r.user_id).filter(Boolean)));
+      if (uniqueUserIds.length === 0) {
+        setProfiles({});
+        setLoadingProfiles(false);
+        return;
+      }
+      // ดึงข้อมูล profile เฉพาะ user ที่เกี่ยวข้องทั้งหมดพร้อมกัน
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id,username")
+        .in("id", uniqueUserIds);
+
+      if (error) {
+        setProfiles({});
+        setLoadingProfiles(false);
+        return;
+      }
+      // แปลงเป็น lookup ของ user_id → username (หรือ null)
+      const map: Record<string, string | null> = {};
+      if (data) {
+        data.forEach((p: RecipeProfile) => {
+          map[p.id] = p.username;
+        });
+      }
+      setProfiles(map);
+      setLoadingProfiles(false);
+    }
+    fetchProfiles();
+  }, [recipes]);
+
   // Fetch all ratings and aggregate per recipe
   useEffect(() => {
     async function fetchRatingsAgg() {
@@ -57,7 +102,6 @@ const RecipeList = () => {
         return;
       }
       setLoadingAgg(true);
-      // ดึงคะแนน rating สำหรับสูตรทั้งหมด
       const recipeIds = recipes.map(r => r.id);
       const { data, error } = await supabase
         .from("ratings")
@@ -68,7 +112,6 @@ const RecipeList = () => {
         setLoadingAgg(false);
         return;
       }
-      // คำนวณเฉลี่ย/นับคะแนนต่อสูตร
       const aggs: RecipeAggregates = {};
       for (const recipeId of recipeIds) {
         const ratings = data?.filter(d => d.recipe_id === recipeId).map(r => r.rating);
@@ -89,7 +132,7 @@ const RecipeList = () => {
     else setRatingAggs({});
   }, [recipes]);
 
-  if (loading || loadingAgg) {
+  if (loading || loadingAgg || loadingProfiles) {
     return (
       <div className="text-center py-12 text-emerald-600 animate-pulse">
         กำลังโหลดสูตรอาหาร...
@@ -118,6 +161,8 @@ const RecipeList = () => {
       <div className="grid gap-4 sm:gap-6 lg:gap-7 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
         {recipes.map((recipe) => {
           const agg = ratingAggs[recipe.id] ?? { avg: 0, count: 0 };
+          // หา username ของเจ้าของสูตร ถ้าไม่มีใช้ "สมาชิก"
+          const authorName = profiles[recipe.user_id] || "สมาชิก";
           return (
             <RecipeCard
               key={recipe.id}
@@ -127,7 +172,7 @@ const RecipeList = () => {
                 image: recipe.image_url ?? "/placeholder.svg",
                 cookingTime: recipe.prep_time ? `${recipe.prep_time} นาที` : "ไม่ระบุ",
                 difficulty: recipe.difficulty,
-                author: "สมาชิก", // อาจดึงจาก profile ถ้าต้องการ
+                author: authorName,
                 rating: agg.avg,
                 ratingsCount: agg.count,
               }}
@@ -143,13 +188,14 @@ const RecipeList = () => {
               const r = recipes.find((r) => r.id === openId);
               if (!r) return undefined;
               const agg = ratingAggs[r.id] ?? { avg: 0, count: 0 };
+              const authorName = profiles[r.user_id] || "สมาชิก";
               return {
                 id: r.id,
                 title: r.title,
                 image: r.image_url ?? "/placeholder.svg",
                 cookingTime: r.prep_time ? `${r.prep_time} นาที` : "ไม่ระบุ",
                 difficulty: r.difficulty,
-                author: "สมาชิก",
+                author: authorName,
                 rating: agg.avg,
                 ratingsCount: agg.count,
                 ingredients: [],
@@ -165,4 +211,3 @@ const RecipeList = () => {
 };
 
 export default RecipeList;
-
