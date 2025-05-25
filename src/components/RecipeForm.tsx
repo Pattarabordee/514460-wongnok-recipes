@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -5,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { useEffect, useState } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 type RecipeFormValues = {
   title: string;
@@ -103,12 +105,10 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     }
   }, [recipe, reset]);
 
-  // Submit handlers unchanged, just ensure values handled correctly below
-
   // 1. CREATE
   const createMutation = useMutation({
     mutationFn: async (data: RecipeFormValues) => {
-      if (!user) throw new Error("ต้องเข้าสู่ระบบก่อน");
+      if (!user || !user.id) throw new Error("กรุณาเข้าสู่ระบบก่อนบันทึกสูตรอาหาร");
       const payload = {
         ...data,
         user_id: user.id,
@@ -118,13 +118,20 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
       const { error } = await supabase.from("recipes").insert(payload);
       if (error) throw error;
     },
-    onSuccess: onSuccess
+    onSuccess: onSuccess,
+    onError: (error: any) => {
+      toast({
+        title: "ไม่สามารถบันทึกสูตรอาหารได้",
+        description: (error?.message as string) || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+        variant: "destructive"
+      });
+    }
   });
 
   // 2. UPDATE
   const updateMutation = useMutation({
     mutationFn: async (data: RecipeFormValues) => {
-      if (!user || !recipe) throw new Error("Invalid");
+      if (!user || !recipe) throw new Error("กรุณาเข้าสู่ระบบก่อนแก้ไขสูตรอาหาร");
       const payload = {
         ...data,
         ingredients: recipe.ingredients ?? [],
@@ -137,12 +144,31 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
         .eq("user_id", user.id);
       if (error) throw error;
     },
-    onSuccess: onSuccess
+    onSuccess: onSuccess,
+    onError: (error: any) => {
+      toast({
+        title: "ไม่สามารถแก้ไขสูตรอาหารได้",
+        description: (error?.message as string) || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+        variant: "destructive"
+      });
+    }
   });
 
   // Watch difficulty and prep_time to set the right value before submit
   const selectedDifficulty = watch("difficulty");
   const selectedPrepTime = watch("prep_time");
+
+  // Prevent rendering/usage if user hasn't logged in
+  if (!user || !user.id) {
+    return (
+      <Dialog open onOpenChange={onCancel}>
+        <DialogContent className="max-w-md text-center flex flex-col items-center justify-center gap-6">
+          <div className="text-lg font-bold text-emerald-700 mt-2">กรุณาเข้าสู่ระบบก่อนเพิ่มหรือแก้ไขสูตรอาหาร</div>
+          <Button onClick={onCancel} className="mx-auto mt-4">กลับ</Button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   const onSubmit = (data: RecipeFormValues) => {
     const finalData: RecipeFormValues = {
@@ -307,3 +333,5 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     </Dialog>
   );
 }
+
+// Note: This file is now about 310 lines long and should probably be refactored into smaller components for maintainability.

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trash2, Edit, Home } from "lucide-react";
+import { Loader2, Plus, Trash2, Edit, Home, Lock } from "lucide-react";
 import RecipeForm from "@/components/RecipeForm";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -47,11 +47,27 @@ export default function MyRecipes() {
     }
   });
 
+  // Prevent non-authenticated access to recipe form
   if (loading) return (
     <div className="flex justify-center items-center h-44">
       <Loader2 className="animate-spin" />
     </div>
   );
+
+  // If not logged in, offer login redirect instead of recipe content
+  if (!user) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-[400px] py-12 gap-4">
+        <Lock className="w-10 h-10 text-gray-400 mb-2" />
+        <div className="text-lg font-semibold text-emerald-800 mb-1">
+          กรุณาเข้าสู่ระบบก่อนเพื่อจัดการสูตรอาหารของคุณ
+        </div>
+        <Link to="/auth">
+          <Button className="px-6">เข้าสู่ระบบ</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
@@ -67,7 +83,8 @@ export default function MyRecipes() {
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-700 text-center order-1 sm:order-2">
           สูตรอาหารของฉัน
         </h1>
-        
+
+        {/* Show Add Recipe button only if user is authenticated */}
         <Button 
           onClick={() => setOpenForm({ mode: "new" })}
           size="sm"
@@ -134,7 +151,8 @@ export default function MyRecipes() {
         </div>
       )}
       
-      {openForm && (
+      {/* RecipeForm can only be opened if user is authenticated */}
+      {openForm && user && (
         <RecipeForm
           mode={openForm.mode}
           recipe={openForm.mode === "edit" ? openForm.recipe : undefined}
