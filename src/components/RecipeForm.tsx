@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -163,7 +162,7 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
     return (
       <Dialog open onOpenChange={onCancel}>
         <DialogContent className="max-w-md text-center flex flex-col items-center justify-center gap-6">
-          <div className="text-lg font-bold text-emerald-700 mt-2">กรุณาเข้าสู่ระบบก่อนเพิ่มหรือแก้ไขสูตรอาหาร</div>
+          <div className="text-lg font-bold text-emerald-700 mt-2">กรุณาเข้าสู่ระบบก่อนเพิ่มหรือแก้ไขสูตรอาหารของคุณ</div>
           <Button onClick={onCancel} className="mx-auto mt-4">กลับ</Button>
         </DialogContent>
       </Dialog>
@@ -171,6 +170,15 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
   }
 
   const onSubmit = (data: RecipeFormValues) => {
+    // ** เพิ่ม safety check ป้องกันแน่นหนา **
+    if (!user || !user.id) {
+      toast({
+        title: "คุณยังไม่ได้เข้าสู่ระบบ",
+        description: "กรุณาเข้าสู่ระบบก่อนบันทึกสูตรอาหารของคุณ",
+        variant: "destructive"
+      });
+      return;
+    }
     const finalData: RecipeFormValues = {
       ...data,
       difficulty:
@@ -334,4 +342,4 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
   );
 }
 
-// Note: This file is now about 310 lines long and should probably be refactored into smaller components for maintainability.
+// Note: This file is now about 340 lines long. แนะนำให้รีแฟคเตอร์ให้เล็กลงเพื่อดูแลรักษาง่ายขึ้น แจ้งได้เลยถ้าต้องการ!

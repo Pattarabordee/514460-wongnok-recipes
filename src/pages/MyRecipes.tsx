@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,16 +83,18 @@ export default function MyRecipes() {
           สูตรอาหารของฉัน
         </h1>
 
-        {/* Show Add Recipe button only if user is authenticated */}
-        <Button 
-          onClick={() => setOpenForm({ mode: "new" })}
-          size="sm"
-          className="order-3 w-full sm:w-auto text-xs sm:text-sm"
-        >
-          <Plus className="w-4 h-4 mr-2" /> 
-          <span className="hidden sm:inline">เพิ่มสูตรอาหารใหม่</span>
-          <span className="sm:hidden">เพิ่มสูตร</span>
-        </Button>
+        {/* ป้องกันปุ่มเพิ่มสูตรแสดง (เฉพาะถ้าล็อกอินเท่านั้น) */}
+        {user && (
+          <Button 
+            onClick={() => setOpenForm({ mode: "new" })}
+            size="sm"
+            className="order-3 w-full sm:w-auto text-xs sm:text-sm"
+          >
+            <Plus className="w-4 h-4 mr-2" /> 
+            <span className="hidden sm:inline">เพิ่มสูตรอาหารใหม่</span>
+            <span className="sm:hidden">เพิ่มสูตร</span>
+          </Button>
+        )}
       </div>
 
       {/* Content */}
