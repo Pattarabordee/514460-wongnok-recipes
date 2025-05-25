@@ -190,8 +190,33 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
           ? customPrepTime || 1
           : Number(selectedPrepTime),
     };
-    if (mode === "new") return createMutation.mutate(finalData);
-    return updateMutation.mutate(finalData);
+    // log ค่า payload และ user ขณะ submit
+    console.log("[RecipeForm Submit]", {
+      user,
+      userId: user.id,
+      finalData
+    });
+    if (mode === "new") {
+      createMutation.mutate(finalData, {
+        onError: (error: any) => {
+          toast({
+            title: "บันทึกสูตรอาหารล้มเหลว",
+            description: error?.message || String(error) || "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง",
+            variant: "destructive",
+          });
+        },
+      });
+      return;
+    }
+    updateMutation.mutate(finalData, {
+      onError: (error: any) => {
+        toast({
+          title: "บันทึกการแก้ไขสูตรอาหารล้มเหลว",
+          description: error?.message || String(error) || "เกิดข้อผิดพลาด กรุณาตรวจสอบข้อมูลอีกครั้ง",
+          variant: "destructive",
+        });
+      },
+    });
   };
 
   return (
