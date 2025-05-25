@@ -10,6 +10,8 @@ import { Loader2 } from "lucide-react";
 import RecipeFormField from "./RecipeFormField";
 import RecipeFormLoaderDialog from "./RecipeFormLoaderDialog";
 import RecipeFormUnauthDialog from "./RecipeFormUnauthDialog";
+import IngredientListInput from "./IngredientListInput";
+import InstructionListInput from "./InstructionListInput";
 
 type RecipeFormValues = {
   title: string;
@@ -73,6 +75,14 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
       : PRESET_PREP_TIMES[0]
   );
 
+  // Added states for ingredients/instructions as string arrays.
+  const [ingredients, setIngredients] = useState<string[]>(
+    (recipe?.ingredients && Array.isArray(recipe.ingredients)) ? recipe.ingredients : [""]
+  );
+  const [instructions, setInstructions] = useState<string[]>(
+    (recipe?.instructions && Array.isArray(recipe.instructions)) ? recipe.instructions : [""]
+  );
+
   // Sync with props
   useEffect(() => {
     if (recipe) {
@@ -98,6 +108,15 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
           ? recipe.prep_time
           : PRESET_PREP_TIMES[0]
       );
+      setIngredients(
+        (recipe.ingredients && Array.isArray(recipe.ingredients)) ? recipe.ingredients : [""]
+      );
+      setInstructions(
+        (recipe.instructions && Array.isArray(recipe.instructions)) ? recipe.instructions : [""]
+      );
+    } else {
+      setIngredients([""]);
+      setInstructions([""]);
     }
   }, [recipe, reset]);
 
@@ -192,6 +211,25 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
       return;
     }
 
+    // Filter and prepare ingredient/instruction arrays
+    const safeIngredients = ingredients.map(s => s.trim()).filter(Boolean);
+    const safeInstructions = instructions.map(s => s.trim()).filter(Boolean);
+
+    if (safeIngredients.length === 0) {
+      toast({
+        title: "โปรดเพิ่มวัตถุดิบอย่างน้อย 1 รายการ",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (safeInstructions.length === 0) {
+      toast({
+        title: "โปรดเพิ่มวิธีทำอย่างน้อย 1 ขั้นตอน",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const finalData: RecipeFormValues = {
       ...data,
       difficulty:
@@ -202,6 +240,8 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
         prepTimeType === "custom"
           ? customPrepTime || 1
           : Number(selectedPrepTime),
+      ingredients: safeIngredients,
+      instructions: safeInstructions
     };
 
     // DEBUG LOGGING: Add log to see user/profile/finalData before mutation
@@ -347,8 +387,8 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
                     PRESET_DIFFICULTIES.includes(selectedDifficulty)
                       ? selectedDifficulty
                       : customDifficulty
-                      ? "อื่นๆ"
-                      : selectedDifficulty
+                        ? "อื่นๆ"
+                        : selectedDifficulty
                   }
                   onChange={e => {
                     const val = e.target.value;
@@ -378,18 +418,34 @@ export default function RecipeForm({ mode, recipe, onCancel, onSuccess }: Recipe
               </div>
             </RecipeFormField>
           </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <RecipeFormField label="วัตถุดิบหรือส่วนผสม">
+              <IngredientListInput
+                value={ingredients}
+                onChange={setIngredients}
+                disabled={isSubmitting}
+              />
+            </RecipeFormField>
+            <RecipeFormField label="วิธีทำ">
+              <InstructionListInput
+                value={instructions}
+                onChange={setInstructions}
+                disabled={isSubmitting}
+              />
+            </RecipeFormField>
+          </div>
           <div className="flex flex-col sm:flex-row gap-2 justify-end mt-4 pt-4 border-t">
-            <Button 
-              variant="ghost" 
-              type="button" 
-              onClick={onCancel} 
+            <Button
+              variant="ghost"
+              type="button"
+              onClick={onCancel}
               disabled={isSubmitting}
               className="w-full sm:w-auto"
             >
               ยกเลิก
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isSubmitting}
               className="w-full sm:w-auto"
             >
